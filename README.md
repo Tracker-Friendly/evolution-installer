@@ -60,3 +60,12 @@ that can change the behavior of the live system:
 - `live.shell=/bin/bash` would set the default shell for the `anon` user to `/bin/bash`
 - `console=ttyS0 vconsole.keymap=cf` would enable `ttyS0` and set the keymap in the console to `cf`
 - `locale.LANG=fr_CA.UTF-8` would set the live system's language to `fr_CA.UTF-8`
+
+---------------------------------------
+
+Notes from Tracker-Friendly
+
+---------------------------------------
+
+In include, populate include/var/cache/xbps with packages downloaded from base-system, and sign them as a repo.
+Add include as -I in mklive to make the installer work. Also add -p "dialog".
