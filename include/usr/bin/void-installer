@@ -1233,7 +1233,7 @@ copy_rootfs() {
         DIE 1
     fi
     xbps-reconfigure -r $TARGETDIR -f base-files >/dev/null 2>&1
-    chroot $TARGETDIR xbps-reconfigure -a
+    chroot $TARGETDIR xbps-reconfigure -fa
 }
 
 install_packages() {
