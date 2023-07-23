@@ -42,7 +42,6 @@ BOOTLOADER_DONE=
 PARTITIONS_DONE=
 NETWORK_DONE=
 FILESYSTEMS_DONE=
-MIRROR_DONE=
 
 TARGETDIR=/mnt/target
 LOG=/dev/tty8
@@ -97,7 +96,7 @@ WIDGET_SIZE="10 70"
 DIALOG() {
     rm -f $ANSWER
     dialog --colors --keep-tite --no-shadow --no-mouse \
-        --backtitle "${BOLD}${WHITE}Void Linux installation -- https://www.voidlinux.org (@@MKLIVE_VERSION@@)${RESET}" \
+        --backtitle "${BOLD}${WHITE}EvolutionOS installation -- https://tracker-friendly.github.io" \
         --cancel-label "Back" --aspect 20 "$@" 2>$ANSWER
     return $?
 }
@@ -105,7 +104,7 @@ DIALOG() {
 INFOBOX() {
     # Note: dialog --infobox and --keep-tite don't work together
     dialog --colors --no-shadow --no-mouse \
-        --backtitle "${BOLD}${WHITE}Void Linux installation -- https://www.voidlinux.org (@@MKLIVE_VERSION@@)${RESET}" \
+        --backtitle "${BOLD}${WHITE}EvolutionOS installation -- https://tracker-friendly.github.io" \
         --title "${TITLE}" --aspect 20 --infobox "$@"
 }
 
@@ -684,7 +683,7 @@ menu_useraccount() {
 
     while true; do
         _preset=$(get_option USERLOGIN)
-        [ -z "$_preset" ] && _preset="void"
+        [ -z "$_preset" ] && _preset="evolution"
         DIALOG --inputbox "Enter a primary login name:" ${INPUTSIZE} "$_preset"
         if [ $? -eq 0 ]; then
             _userlogin="$(cat $ANSWER)"
@@ -705,7 +704,7 @@ menu_useraccount() {
 
     while true; do
         _preset=$(get_option USERNAME)
-        [ -z "$_preset" ] && _preset="Void User"
+        [ -z "$_preset" ] && _preset="Evolution User"
         DIALOG --inputbox "Enter a display name for login '$(get_option USERLOGIN)' :" \
             ${INPUTSIZE} "$_preset"
         if [ $? -eq 0 ]; then
@@ -1217,10 +1216,6 @@ copy_rootfs() {
     mkdir -p $TARGETDIR/var/db/xbps/keys $TARGETDIR/usr/share
     cp -a /usr/share/xbps.d $TARGETDIR/usr/share/
     cp /var/db/xbps/keys/*.plist $TARGETDIR/var/db/xbps/keys
-    if [ -n "$MIRROR_DONE" ]; then
-        mkdir -p $TARGETDIR/etc
-        cp -a /etc/xbps.d $TARGETDIR/etc
-    fi
     mkdir -p $TARGETDIR/boot/grub
 
     _arch=$(xbps-uhelper arch)
@@ -1254,10 +1249,6 @@ install_packages() {
     mkdir -p $TARGETDIR/var/db/xbps/keys $TARGETDIR/usr/share
     cp -a /usr/share/xbps.d $TARGETDIR/usr/share/
     cp /var/db/xbps/keys/*.plist $TARGETDIR/var/db/xbps/keys
-    if [ -n "$MIRROR_DONE" ]; then
-        mkdir -p $TARGETDIR/etc
-        cp -a /etc/xbps.d $TARGETDIR/etc
-    fi
     mkdir -p $TARGETDIR/boot/grub
 
     _arch=$(xbps-uhelper arch)
@@ -1411,7 +1402,7 @@ ${BOLD}Do you want to continue?${RESET}" 20 80 || return
     umount_filesystems
 
     # installed successfully.
-    DIALOG --yesno "${BOLD}Void Linux has been installed successfully!${RESET}\n
+    DIALOG --yesno "${BOLD}EvolutionOS has been installed successfully!${RESET}\n
 Do you want to reboot the system?" ${YESNOSIZE}
     if [ $? -eq 0 ]; then
         shutdown -r now
@@ -1441,10 +1432,6 @@ menu_source() {
     set_option SOURCE $src
 }
 
-menu_mirror() {
-    xmirror 2>$LOG && MIRROR_DONE=1
-}
-
 menu() {
     local AFTER_HOSTNAME
     if [ -z "$DEFITEM" ]; then
@@ -1455,12 +1442,11 @@ menu() {
         AFTER_HOSTNAME="Timezone"
         DIALOG --default-item $DEFITEM \
             --extra-button --extra-label "Settings" \
-            --title " Void Linux installation menu " \
+            --title " EvolutionOS installation menu " \
             --menu "$MENULABEL" 10 70 0 \
             "Keyboard" "Set system keyboard" \
             "Network" "Set up the network" \
             "Source" "Set source installation" \
-            "Mirror" "Select XBPS mirror" \
             "Hostname" "Set system hostname" \
             "Timezone" "Set system time zone" \
             "RootPassword" "Set system root password" \
@@ -1474,12 +1460,11 @@ menu() {
         AFTER_HOSTNAME="Locale"
         DIALOG --default-item $DEFITEM \
             --extra-button --extra-label "Settings" \
-            --title " Void Linux installation menu " \
+            --title " EvolutionOS installation menu " \
             --menu "$MENULABEL" 10 70 0 \
             "Keyboard" "Set system keyboard" \
             "Network" "Set up the network" \
             "Source" "Set source installation" \
-            "Mirror" "Select XBPS mirror" \
             "Hostname" "Set system hostname" \
             "Locale" "Set system locale" \
             "Timezone" "Set system time zone" \
@@ -1505,8 +1490,7 @@ menu() {
     case $(cat $ANSWER) in
         "Keyboard") menu_keymap && [ -n "$KEYBOARD_DONE" ] && DEFITEM="Network";;
         "Network") menu_network && [ -n "$NETWORK_DONE" ] && DEFITEM="Source";;
-        "Source") menu_source && [ -n "$SOURCE_DONE" ] && DEFITEM="Mirror";;
-        "Mirror") menu_mirror && [ -n "$MIRROR_DONE" ] && DEFITEM="Hostname";;
+        "Source") menu_source && [ -n "$SOURCE_DONE" ] && DEFITEM="Hostname";;
         "Hostname") menu_hostname && [ -n "$HOSTNAME_DONE" ] && DEFITEM="$AFTER_HOSTNAME";;
         "Locale") menu_locale && [ -n "$LOCALE_DONE" ] && DEFITEM="Timezone";;
         "Timezone") menu_timezone && [ -n "$TIMEZONE_DONE" ] && DEFITEM="RootPassword";;
@@ -1528,20 +1512,18 @@ if ! command -v dialog >/dev/null; then
 fi
 
 if [ "$(id -u)" != "0" ]; then
-   echo "void-installer must run as root" 1>&2
+   echo "evolution-installer must run as root" 1>&2
    exit 1
 fi
 
 #
 # main()
 #
-DIALOG --title "${BOLD}${RED} Enter the void ... ${RESET}" --msgbox "\n
-Welcome to the Void Linux installation. A simple and minimal \
-Linux distribution made from scratch and built from the source package tree \
-available for XBPS, a new alternative binary package system.\n\n
-The installation should be pretty straightforward. If you are in trouble \
-please join us at ${BOLD}#voidlinux${RESET} on ${BOLD}irc.libera.chat${RESET}.\n\n
-${BOLD}https://www.voidlinux.org${RESET}\n\n" 16 80
+DIALOG --title "${BOLD}${RED} EvolutionOS Installer ${RESET}" --msgbox "\n
+Welcome to the EvolutionOS installer. A simple and minimal \
+Linux distribution built to be as fast as possible.\n\n
+The installation should be pretty straightforward.\n\n
+${BOLD}https://tracker-friendly.github.io${RESET}\n\n" 16 80
 
 while true; do
     menu

@@ -12,3 +12,5 @@ stamps*
 void-live-*/
 release/
 include/var/cache/xbps
+include-i686/var/cache/xbps
+tmp*/
